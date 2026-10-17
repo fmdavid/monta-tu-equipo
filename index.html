@@ -96,6 +96,31 @@
   .timer .tbar i { display: block; height: 100%; background: #fff; }
   .timerbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
   .addcode input.mesa { width: 14em; font-family: inherit; text-transform: none; }
+  /* Proyeccion (vista del profesor): todo un 25 % mayor y mas ancho */
+  html.profe { font-size: 20px; }
+  body.profe main, body.profe footer { max-width: 1840px; }
+  .nowrap { white-space: nowrap; }
+  .envio { font-weight: 700; } .envio.ok { color: var(--ok); } .envio.mal { color: var(--bad); }
+  .autotxt { color: var(--slate); font-size: .9rem; } .autotxt.mal { color: var(--bad); font-weight: 700; }
+  .col .mesa { font-size: 1.25rem; font-weight: 700; margin: 0 0 2px; }
+  .vband { margin: 8px 0 6px; padding: 6px 10px; border-radius: 6px; color: #fff; font-weight: 700; }
+  .vband.v-ok { background: var(--ok); } .vband.v-ambar { background: var(--warn); } .vband.v-rojo { background: var(--bad); }
+  .winner { margin-top: 14px; display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+  .winner b { font-size: 1.5rem; color: var(--copper); }
+  .winner span { color: var(--slate); }
+  .col .wintag { display: inline-block; background: var(--copper); color: #fff; font-weight: 700; border-radius: 4px; padding: 1px 8px; margin-left: 6px; font-size: .85rem; vertical-align: middle; }
+  .brief .nota { margin-top: 6px; font-weight: 700; color: var(--copper); }
+  /* Movil: el total y "Entregar", siempre a la vista */
+  .mbar { display: none; }
+  @media (max-width: 860px) {
+    body.shopping { padding-bottom: 84px; }
+    body.shopping .mbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; background: var(--dark); color: #fff; padding: 10px 16px; gap: 12px; align-items: center; justify-content: space-between; z-index: 10; }
+    .mbar .mt { font-weight: 700; font-size: 1.1rem; }
+    .mbar .ml { font-size: .9rem; color: #c7cdd6; }
+    .mbar .ml.neg { color: #ff8a80; font-weight: 700; }
+    .mbar button { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; }
+    .mbar button:disabled { background: #5b6b7a; }
+  }
   footer { max-width: 1180px; margin: 30px auto 20px; padding: 0 16px; color: var(--slate); font-size: .85rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 </style>
 </head>
@@ -146,7 +171,8 @@
   <section id="stepDone" class="hidden">
     <h2>Entregado. Vuestro código:</h2>
     <div class="code" id="code"></div>
-    <p>Dictádselo al profesor tal cual. Después tendréis un minuto para defender vuestra elección.</p>
+    <p class="envio" id="envio"></p>
+    <p>Si el profesor os lo pide, dictádselo tal cual. Después tendréis un minuto para defender vuestra elección.</p>
     <div id="doneSummary"></div>
   </section>
 
@@ -158,6 +184,8 @@
       <input id="mesaIn" class="mesa" aria-label="Mesa o nombre del grupo (opcional)" placeholder="Mesa o nombre (opcional)" autocomplete="off">
       <button id="codeAdd">Añadir</button>
       <button class="small ghost" id="clearAll">Vaciar todo</button>
+      <button class="small" id="autoBtn">Recibir entregas</button>
+      <span id="autoTxt" class="autotxt"></span>
       <span class="err" id="codeErr" role="alert"></span>
     </div>
     <div class="timerbtns">
@@ -167,17 +195,32 @@
       <button class="small" data-min="1">1 min</button>
       <button class="small ghost" id="timerStop">Parar</button>
     </div>
+    <div class="winner" id="winner"></div>
     <div class="cols" id="cols"></div>
   </section>
 </main>
 
+<div class="mbar" id="mbar" aria-hidden="true"><div><div class="mt" id="mTotal"></div><div class="ml" id="mLeft"></div></div><button id="mDeliver" tabindex="-1">Entregar</button></div>
+
 <footer>
   <span>Catálogo cerrado y con precios orientativos, preparado para esta dinámica. No es una recomendación de compra.</span>
-  <span><button class="linkbtn" id="toggleTeacher">Vista del profesor</button></span>
+  <span><button class="linkbtn hidden" id="toggleTeacher">Volver a la vista de grupo</button></span>
 </footer>
 
 <script>
 "use strict";
+/* ============================ ENTREGAS AUTOMATICAS ============================
+   Al entregar, la web manda la mesa y el codigo a un formulario de Google de David;
+   la vista del profesor lee la hoja de respuestas (compartida "cualquiera con el enlace: lector").
+   Si algo falla, los codigos siguen funcionando a mano. Vacio = desactivado. */
+const ENVIO = {
+  form: "https://docs.google.com/forms/d/e/1FAIpQLScQP55nOGk9FxlKafDOLuzIP2Mt9JK7ZJvbKIN5qE1DGM2d1w/formResponse", // formulario "Monta tu equipo, entregas" (cuenta fmdavid@gmail.com)
+  campoMesa: "entry.767342935",    // pregunta "Mesa"
+  campoCodigo: "entry.1576104912", // pregunta "Código"
+  hoja: "1UdlGXjOC3mGL7TcX6Hv8KhJ89F467ZGl12Nv1m788wU", // hoja "Monta tu equipo, entregas (respuestas)", compartida como lector
+};
+const envioActivo = () => !!(ENVIO.form && ENVIO.campoMesa && ENVIO.campoCodigo);
+
 /* ============================ DATOS ============================
    Catalogo y perfiles: PROPUESTA de Claude (12/10/2026). Los precios son orientativos:
    verificarlos la semana anterior. El ORDEN de los articulos fija los codigos de entrega:
@@ -237,7 +280,8 @@ const PERFILES = [
   { n: "Agencia pequeña con datos de clientes", b: 4000,
     quien: "Dos personas que hacen comunicación para empresas. Son dos puestos de trabajo.",
     hace: ["Textos, imágenes y presentaciones.", "Manejan entrevistas y documentos confidenciales de sus clientes.", "Uno de los dos edita algo de vídeo."],
-    importa: "Que los datos de los clientes no acaben donde no deben." },
+    importa: "Que los datos de los clientes no acaben donde no deben.",
+    nota: "Cada artículo se compra una vez: para los dos puestos, elegid dos equipos distintos." },
   { n: "Redactora y correctora que viaja mucho", b: 700,
     quien: "Escribe y corrige textos; trabaja en trenes, cafeterías y bibliotecas.",
     hace: ["Redacta y corrige con ayuda de un chat de IA.", "Muchas pestañas y documentos abiertos.", "Nada de imagen ni de vídeo."],
@@ -374,10 +418,12 @@ function choose(i) {
   br.append(el("h2", null, P.n + " · " + eur(P.b)), el("div", null, P.quien));
   const ul = el("ul"); P.hace.forEach((h) => ul.append(el("li", null, h))); br.append(ul);
   br.append(el("div", null, "Le importa: " + P.importa));
+  if (P.nota) br.append(el("div", "nota", P.nota));
   const back = el("button", "linkbtn", "Cambiar de perfil");
-  back.addEventListener("click", () => { $("stepShop").classList.add("hidden"); $("stepProfile").classList.remove("hidden"); });
+  back.addEventListener("click", () => { $("stepShop").classList.add("hidden"); $("stepProfile").classList.remove("hidden"); document.body.classList.remove("shopping"); });
   br.append(back);
   $("stepProfile").classList.add("hidden"); $("stepShop").classList.remove("hidden");
+  document.body.classList.add("shopping");
   renderCatalog(); renderBasket();
   window.scrollTo(0, 0);
 }
@@ -424,9 +470,14 @@ function renderBasket() {
   $("leftLabel").textContent = over ? "Os pasáis en" : "Os quedan";
   $("left").textContent = eur(Math.abs(P.b - T.total)); $("leftRow").classList.toggle("neg", over);
   $("deliver").disabled = !sel.length;
+  $("mTotal").textContent = eur(T.total) + " de " + eur(P.b);
+  $("mLeft").textContent = (over ? "Os pasáis en " : "Os quedan ") + eur(Math.abs(P.b - T.total));
+  $("mLeft").classList.toggle("neg", over);
+  $("mDeliver").disabled = !sel.length;
 }
+$("mDeliver").addEventListener("click", () => $("deliver").click());
 
-function summary(pi, sel, withChecks) {
+function summary(pi, sel, withChecks, noVerdict) {
   const box = el("div"), ul = el("ul");
   sel.forEach((i) => { const it = ITEMS[i]; ul.append(el("li", null, it.n + " · " + (it.t === "S" ? (it.p ? eur(it.p) + " al mes" : "gratis") : eur(it.p)))); });
   const T = totals(sel);
@@ -434,7 +485,8 @@ function summary(pi, sel, withChecks) {
   if (withChecks) {
     const checks = evaluate(pi, sel), cl = el("ul", "checks");
     checks.forEach((c) => { const li = el("li"); li.append(el("span", "tag " + c.nivel, TAG[c.nivel]), el("span", null, c.texto)); cl.append(li); });
-    box.append(cl, el("div", "verdict", VTXT[verdict(checks)]));
+    box.append(cl);
+    if (!noVerdict) box.append(el("div", "verdict", VTXT[verdict(checks)]));
   }
   return box;
 }
@@ -442,10 +494,23 @@ function summary(pi, sel, withChecks) {
 $("deliver").addEventListener("click", () => {
   if (!window.confirm("¿Entregamos? Ya no se podrá cambiar.")) return;
   const sel = Array.from(cesta).sort((a, b) => a - b);
-  $("code").textContent = encode(perfil, sel);
+  const codigo = encode(perfil, sel);
+  $("code").textContent = codigo;
+  const env = $("envio"); env.className = "envio"; env.textContent = "";
+  if (envioActivo()) {
+    const mesa = (window.prompt("¿Cómo se llama vuestra mesa? Por ejemplo: Mesa de la ventana") || "").trim().slice(0, 30);
+    env.textContent = "Enviando al profesor…";
+    const datos = new URLSearchParams();
+    datos.append(ENVIO.campoMesa, mesa || "Sin nombre");
+    datos.append(ENVIO.campoCodigo, codigo);
+    fetch(ENVIO.form, { method: "POST", mode: "no-cors", body: datos })
+      .then(() => { env.className = "envio ok"; env.textContent = "✔ Enviado al profesor" + (mesa ? " como «" + mesa + "»" : "") + "."; })
+      .catch(() => { env.className = "envio mal"; env.textContent = "No se ha podido enviar: dictad el código al profesor."; });
+  }
   const s = $("doneSummary"); s.textContent = "";
   s.append(el("h2", null, PERFILES[perfil].n), summary(perfil, sel, true));
   $("stepShop").classList.add("hidden"); $("stepDone").classList.remove("hidden");
+  document.body.classList.remove("shopping");
   $("sub").textContent = "Entregado.";
   window.scrollTo(0, 0);
 });
@@ -459,15 +524,25 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(grupos)); } 
 function renderTeacher() {
   const cols = $("cols"); cols.textContent = "";
   const maxV = Math.max.apply(null, [0].concat(grupos.map((g) => g.v)));
+  const nombre = (g, k) => (g.m ? g.m : "Grupo " + (k + 1));
+  const total = grupos.reduce((a, g) => a + g.v, 0);
+  const ganan = maxV ? grupos.map((g, k) => (g.v === maxV ? nombre(g, k) : null)).filter(Boolean) : [];
+  const w = $("winner"); w.textContent = "";
+  if (grupos.length) {
+    w.append(el("b", null, ganan.length === 1 ? "Gana: " + ganan[0] + ", " + maxV + (maxV === 1 ? " voto" : " votos") : ganan.length > 1 ? "Empate a " + maxV + ": " + ganan.join(" y ") : "Aún sin votos"),
+      el("span", null, "Votos contados: " + total));
+  }
   grupos.forEach((g, k) => {
     const d = decode(g.c); if (!d) return;
-    const checks = evaluate(d.pi, d.sel), col = el("div", "col v-" + verdict(checks) + (g.v && g.v === maxV ? " win" : ""));
-    col.append(el("div", "who", (g.m ? g.m : "Grupo " + (k + 1)) + " · " + d.code), el("h3", null, PERFILES[d.pi].n), summary(d.pi, d.sel, true));
+    const checks = evaluate(d.pi, d.sel), v = verdict(checks), gana = g.v && g.v === maxV;
+    const col = el("div", "col v-" + v + (gana ? " win" : ""));
+    const titulo = el("div", "mesa", nombre(g, k)); if (gana) titulo.append(el("span", "wintag", "Gana"));
+    col.append(titulo, (() => { const w = el("div", "who", PERFILES[d.pi].n + " · "); w.append(el("span", "nowrap", d.code)); return w; })(), el("div", "vband v-" + v, VTXT[v]), summary(d.pi, d.sel, true, true));
     const votes = el("div", "votes"), minus = el("button", "small ghost", "−"), plus = el("button", "small", "+"), rm = el("button", "small ghost", "Quitar");
     minus.setAttribute("aria-label", "Quitar un voto"); plus.setAttribute("aria-label", "Sumar un voto");
     minus.addEventListener("click", () => { g.v = Math.max(0, g.v - 1); save(); renderTeacher(); });
     plus.addEventListener("click", () => { g.v += 1; save(); renderTeacher(); });
-    rm.addEventListener("click", () => { grupos.splice(k, 1); save(); renderTeacher(); });
+    rm.addEventListener("click", () => { if (window.confirm("¿Quitar la columna de " + nombre(g, k) + "?")) { grupos.splice(k, 1); save(); renderTeacher(); } });
     votes.append(document.createTextNode("Votos"), minus, el("b", null, String(g.v)), plus, rm);
     col.append(votes); cols.append(col);
   });
@@ -509,16 +584,62 @@ function startTimer(min) {
 document.querySelectorAll(".timerbtns [data-min]").forEach((b) => b.addEventListener("click", () => startTimer(Number(b.dataset.min))));
 $("timerStop").addEventListener("click", () => { reloj = null; try { localStorage.removeItem(TKEY); } catch (e) { /* nada */ } drawTimer(); });
 if (reloj) { if (reloj.end > Date.now()) tick = setInterval(drawTimer, 1000); drawTimer(); }
-$("clearAll").addEventListener("click", () => { if (window.confirm("¿Borrar todos los grupos?")) { grupos = []; save(); renderTeacher(); } });
+$("clearAll").addEventListener("click", () => { if (window.confirm("¿Borrar todos los grupos?")) { grupos = []; save(); ignorarHasta = filasVistas; try { localStorage.setItem(IKEY, String(ignorarHasta)); } catch (e) { /* nada */ } renderTeacher(); } });
+
+/* ---------- Recibir las entregas desde la hoja de Google ---------- */
+const IKEY = "monta-tu-equipo-ignorar";
+let ignorarHasta = 0, filasVistas = 0, sondeo = null;
+try { ignorarHasta = parseInt(localStorage.getItem(IKEY) || "0", 10) || 0; } catch (e) { ignorarHasta = 0; }
+function csvFilas(txt) {
+  const filas = []; let fila = [], campo = "", q = false;
+  for (let i = 0; i < txt.length; i++) {
+    const ch = txt[i];
+    if (q) { if (ch === '"' && txt[i + 1] === '"') { campo += '"'; i++; } else if (ch === '"') q = false; else campo += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ",") { fila.push(campo); campo = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && txt[i + 1] === "\n") i++; fila.push(campo); filas.push(fila); fila = []; campo = ""; }
+    else campo += ch;
+  }
+  if (campo || fila.length) { fila.push(campo); filas.push(fila); }
+  return filas;
+}
+function leerHoja() {
+  const url = "https://docs.google.com/spreadsheets/d/" + ENVIO.hoja + "/gviz/tq?tqx=out:csv&_=" + Date.now();
+  return fetch(url, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); }).then((txt) => {
+    const filas = csvFilas(txt).slice(1).filter((f) => f.length >= 3 && f[2]);
+    filasVistas = filas.length;
+    if (ignorarHasta > filasVistas) ignorarHasta = 0; // la hoja se vacio
+    let nuevas = 0;
+    filas.slice(ignorarHasta).forEach((f) => {
+      const d = decode(f[2]); if (!d) return;
+      const m = (f[1] || "").trim().slice(0, 30);
+      if (grupos.some((g) => g.c === d.code && (g.m || "") === m)) return;
+      grupos.push({ c: d.code, v: 0, m }); nuevas++;
+    });
+    if (nuevas) { save(); renderTeacher(); }
+    const t = $("autoTxt"); t.className = "autotxt";
+    t.textContent = "Recibiendo: " + (filasVistas - ignorarHasta) + " entregas · " + new Date().toLocaleTimeString("es-ES");
+  }).catch(() => { const t = $("autoTxt"); t.className = "autotxt mal"; t.textContent = "No llega la hoja: teclead los códigos."; });
+}
+$("autoBtn").addEventListener("click", () => {
+  if (!ENVIO.hoja) { $("autoTxt").textContent = "Falta configurar la hoja (ENVIO.hoja)."; return; }
+  if (sondeo) { clearInterval(sondeo); sondeo = null; $("autoBtn").textContent = "Recibir entregas"; $("autoTxt").textContent = "Pausado."; return; }
+  $("autoBtn").textContent = "Pausar"; leerHoja(); sondeo = setInterval(leerHoja, 5000);
+});
+if (!ENVIO.hoja) $("autoBtn").classList.add("hidden");
 
 function showTeacher(on) {
   ["stepProfile", "stepShop", "stepDone"].forEach((id) => $(id).classList.add("hidden"));
   $("stepTeacher").classList.toggle("hidden", !on);
   document.body.classList.toggle("profe", on);
-  if (on) { $("sub").textContent = "Vista del profesor."; $("toggleTeacher").textContent = "Volver a la vista de grupo"; renderTeacher(); }
-  else { $("sub").textContent = "Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad."; $("toggleTeacher").textContent = "Vista del profesor"; $("stepProfile").classList.remove("hidden"); }
+  document.documentElement.classList.toggle("profe", on);
+  if (on) document.body.classList.remove("shopping");
+  // La vista del profesor no se enlaza desde la página: se entra con #profe al final de la dirección.
+  $("toggleTeacher").classList.toggle("hidden", !on);
+  if (on) { $("sub").textContent = "Vista del profesor."; renderTeacher(); }
+  else { $("sub").textContent = "Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad."; $("stepProfile").classList.remove("hidden"); }
 }
-$("toggleTeacher").addEventListener("click", () => { location.hash = location.hash === "#profe" ? "" : "#profe"; });
+$("toggleTeacher").addEventListener("click", () => { location.hash = ""; });
 window.addEventListener("hashchange", () => showTeacher(location.hash === "#profe"));
 if (location.hash === "#profe") showTeacher(true);
 </script>
