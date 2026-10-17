@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monta tu equipo</title>
+<style>
+  :root {
+    --ink: #161a20; --dark: #12151b; --card: #edeff2; --line: #d7dbe0; --slate: #5b6b7a;
+    --copper: #c97a3d; --copper-soft: #f6e9dd; --teal: #1c7c84; --teal-soft: #e7f1f1;
+    --ok: #1c7c84; --warn: #a86a00; --bad: #b3261e; --bg: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Calibri, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.4; }
+  header { background: var(--dark); color: #fff; padding: 18px 20px; }
+  header h1 { margin: 0; font-size: 1.5rem; }
+  header p { margin: 4px 0 0; color: #c7cdd6; }
+  main { max-width: 1180px; margin: 0 auto; padding: 16px; }
+  h2 { font-size: 1.15rem; margin: 22px 0 10px; }
+  h2 small { font-weight: 400; color: var(--slate); font-size: .9rem; }
+  button { font: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
+
+  /* Perfiles */
+  .profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .profile { text-align: left; background: var(--teal-soft); border: 2px solid transparent; border-radius: 10px; padding: 12px; color: var(--ink); }
+  .profile:hover, .profile:focus-visible { border-color: var(--teal); outline: none; }
+  .profile b { display: block; }
+  .profile span { display: block; font-size: 1.3rem; font-weight: 700; color: var(--teal); margin-top: 6px; }
+  .brief { background: var(--teal-soft); border-radius: 10px; padding: 14px 16px; }
+  .brief h2 { margin: 0 0 6px; }
+  .brief ul { margin: 6px 0 0; padding-left: 20px; }
+  .linkbtn { background: none; border: none; color: var(--teal); text-decoration: underline; padding: 0; }
+
+  /* Catalogo + cesta */
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .item { text-align: left; background: var(--card); border: 2px solid transparent; border-radius: 10px; padding: 10px 12px; color: var(--ink); display: flex; flex-direction: column; gap: 4px; min-height: 108px; }
+  .item:hover, .item:focus-visible { border-color: var(--copper); outline: none; }
+  .item[aria-pressed="true"] { background: var(--copper-soft); border-color: var(--copper); }
+  .item .name { font-weight: 700; }
+  .item .spec { font-size: .88rem; color: var(--slate); flex: 1; }
+  .item .price { font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .item .mark { font-size: .82rem; font-weight: 700; color: var(--copper); }
+  .basket { position: sticky; top: 10px; border: 2px dashed var(--line); border-radius: 12px; padding: 14px; background: #fff; }
+  .basket.over { border-color: var(--copper); background: var(--copper-soft); }
+  .basket h2 { margin: 0 0 8px; }
+  .basket ul { list-style: none; margin: 0; padding: 0; }
+  .basket li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: .93rem; }
+  .basket li button { border: none; background: none; color: var(--slate); padding: 0 4px; font-size: 1.05rem; line-height: 1; }
+  .basket .empty { color: var(--slate); font-style: italic; border: none; }
+  .sums { margin-top: 10px; font-size: .95rem; }
+  .sums div { display: flex; justify-content: space-between; }
+  .sums .total { font-size: 1.25rem; font-weight: 700; margin-top: 6px; }
+  .bar { height: 12px; background: var(--card); border-radius: 6px; overflow: hidden; margin: 8px 0 4px; }
+  .bar i { display: block; height: 100%; background: var(--teal); }
+  .bar.overbar i { background: var(--bad); }
+  .left { font-weight: 700; }
+  .left.neg { color: var(--bad); }
+  .primary { width: 100%; margin-top: 12px; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 1.05rem; font-weight: 700; }
+  .primary:disabled { background: #a9b1ba; cursor: not-allowed; }
+
+  /* Entrega */
+  .code { font-family: Consolas, "Courier New", monospace; font-size: 2.6rem; font-weight: 700; letter-spacing: .08em; background: var(--dark); color: #fff; border-radius: 12px; padding: 14px 20px; display: inline-block; margin: 8px 0; }
+  .checks { list-style: none; margin: 10px 0 0; padding: 0; }
+  .checks li { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .tag { flex: none; min-width: 5.2em; font-weight: 700; font-size: .85rem; border-radius: 4px; padding: 2px 6px; text-align: center; align-self: flex-start; color: #fff; }
+  .tag.ok { background: var(--ok); } .tag.ambar { background: var(--warn); } .tag.rojo { background: var(--bad); }
+  .verdict { font-size: 1.2rem; font-weight: 700; margin-top: 12px; }
+
+  /* Vista del profesor */
+  .addcode { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .addcode input { font: inherit; font-family: Consolas, monospace; font-size: 1.2rem; padding: 8px 10px; border: 2px solid var(--line); border-radius: 8px; width: 13em; text-transform: uppercase; }
+  .addcode button, .small { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-weight: 700; }
+  .small.ghost { background: var(--card); color: var(--ink); }
+  .err { color: var(--bad); font-weight: 700; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+  .col { background: var(--card); border-radius: 12px; padding: 12px; border-top: 6px solid var(--slate); }
+  .col.v-ok { border-top-color: var(--ok); } .col.v-ambar { border-top-color: var(--warn); } .col.v-rojo { border-top-color: var(--bad); }
+  .col.win { outline: 3px solid var(--copper); }
+  .col h3 { margin: 0; font-size: 1.05rem; }
+  .col .who { color: var(--slate); font-size: .85rem; }
+  .col ul { margin: 8px 0; padding-left: 18px; font-size: .9rem; }
+  .col .checks { padding: 0; font-size: .86rem; }
+  .col .checks li { flex-direction: column; gap: 2px; }
+  .col .money { font-weight: 700; }
+  .votes { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .votes .small { padding: 6px 10px; }
+  .votes b { font-size: 1.3rem; min-width: 1.6em; text-align: center; }
+  body.profe main, body.profe footer { max-width: 1500px; }
+  .timer { background: var(--teal); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 16px; font-weight: 700; }
+  .timer.hurry { background: var(--warn); } .timer.done { background: var(--bad); }
+  .timer .clock { font-size: 2.4rem; font-family: Consolas, "Courier New", monospace; min-width: 4.2em; }
+  .timer .tbar { flex: 1; height: 14px; background: rgba(255,255,255,.3); border-radius: 7px; overflow: hidden; }
+  .timer .tbar i { display: block; height: 100%; background: #fff; }
+  .timerbtns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .addcode input.mesa { width: 14em; font-family: inherit; text-transform: none; }
+  footer { max-width: 1180px; margin: 30px auto 20px; padding: 0 16px; color: var(--slate); font-size: .85rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Monta tu equipo</h1>
+  <p id="sub">Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad.</p>
+</header>
+<div class="timer hidden" id="timer" aria-live="polite"><span class="clock" id="clock">15:00</span><span id="timerTxt">Para entregar</span><span class="tbar"><i id="tbarFill"></i></span></div>
+
+<main>
+  <!-- 1. Elegir perfil -->
+  <section id="stepProfile">
+    <h2>1. ¿Para quién compráis? <small>Elegid el perfil que más se parezca a vosotros.</small></h2>
+    <div class="profiles" id="profiles"></div>
+  </section>
+
+  <!-- 2. Catalogo y cesta -->
+  <section id="stepShop" class="hidden">
+    <div class="brief" id="brief"></div>
+    <div class="layout">
+      <div>
+        <h2>Equipos <small>precio único</small></h2>
+        <div class="grid" id="cat-E"></div>
+        <h2>Extras <small>precio único</small></h2>
+        <div class="grid" id="cat-X"></div>
+        <h2>Suscripciones <small>precio al mes; en la cesta cuentan doce meses</small></h2>
+        <div class="grid" id="cat-S"></div>
+      </div>
+      <aside class="basket" id="basket" aria-live="polite">
+        <h2>Vuestra cesta</h2>
+        <ul id="basketList"></ul>
+        <div class="sums">
+          <div><span>Equipo y extras</span><span id="sumOnce"></span></div>
+          <div><span>Suscripciones, un año</span><span id="sumYear"></span></div>
+          <div class="total"><span>Total</span><span id="sumTotal"></span></div>
+          <div class="bar" id="bar"><i id="barFill"></i></div>
+          <div><span>Presupuesto</span><span id="budget"></span></div>
+          <div class="left" id="leftRow"><span id="leftLabel"></span><span id="left"></span></div>
+        </div>
+        <button class="primary" id="deliver">Entregar</button>
+        <p style="font-size:.85rem;color:var(--slate);margin:8px 0 0">Al entregar ya no se puede cambiar. Podéis arrastrar las tarjetas a la cesta o pulsarlas.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 3. Entrega -->
+  <section id="stepDone" class="hidden">
+    <h2>Entregado. Vuestro código:</h2>
+    <div class="code" id="code"></div>
+    <p>Dictádselo al profesor tal cual. Después tendréis un minuto para defender vuestra elección.</p>
+    <div id="doneSummary"></div>
+  </section>
+
+  <!-- Vista del profesor -->
+  <section id="stepTeacher" class="hidden">
+    <h2>Vista del profesor <small>teclead el código de cada grupo</small></h2>
+    <div class="addcode">
+      <input id="codeIn" aria-label="Código del grupo" placeholder="3-ABCDEF-G" autocomplete="off">
+      <input id="mesaIn" class="mesa" aria-label="Mesa o nombre del grupo (opcional)" placeholder="Mesa o nombre (opcional)" autocomplete="off">
+      <button id="codeAdd">Añadir</button>
+      <button class="small ghost" id="clearAll">Vaciar todo</button>
+      <span class="err" id="codeErr" role="alert"></span>
+    </div>
+    <div class="timerbtns">
+      <span>Reloj del juego:</span>
+      <button class="small" data-min="15">15 min</button>
+      <button class="small" data-min="5">5 min</button>
+      <button class="small" data-min="1">1 min</button>
+      <button class="small ghost" id="timerStop">Parar</button>
+    </div>
+    <div class="cols" id="cols"></div>
+  </section>
+</main>
+
+<footer>
+  <span>Catálogo cerrado y con precios orientativos, preparado para esta dinámica. No es una recomendación de compra.</span>
+  <span><button class="linkbtn" id="toggleTeacher">Vista del profesor</button></span>
+</footer>
+
+<script>
+"use strict";
+/* ============================ DATOS ============================
+   Catalogo y perfiles: PROPUESTA de Claude (12/10/2026). Los precios son orientativos:
+   verificarlos la semana anterior. El ORDEN de los articulos fija los codigos de entrega:
+   si se añade o se quita alguno, los codigos antiguos dejan de valer. */
+const EQUIPOS = [
+  { n: "Portátil básico 15\"", d: "8 GB de memoria (soldada) · 256 GB · gráfica integrada", p: 449, ram: 8, disco: 256, portatil: true },
+  { n: "Portátil equilibrado 15\"", d: "16 GB de memoria (ampliable) · 512 GB · gráfica integrada", p: 699, ram: 16, disco: 512, portatil: true, ampliable: true },
+  { n: "Portátil «PC con IA» 15\"", d: "16 GB de memoria · 512 GB · gráfica integrada · NPU", p: 899, ram: 16, disco: 512, portatil: true, etiquetaIA: true },
+  { n: "Portátil reacondicionado 14\"", d: "Gama profesional · 16 GB · 512 GB · integrada · 1,3 kg · un año de garantía", p: 479, ram: 16, disco: 512, portatil: true, ligero: true },
+  { n: "Ultraligero 13\"", d: "16 GB · 512 GB · integrada · 1 kg · batería para todo el día", p: 1049, ram: 16, disco: 512, portatil: true, ligero: true },
+  { n: "Portátil Mac 13\"", d: "16 GB de memoria unificada · 512 GB · 1,2 kg", p: 1329, ram: 16, disco: 512, portatil: true, ligero: true, unificada: true },
+  { n: "Portátil Mac 14\" de gama alta", d: "24 GB de memoria unificada · 1 TB", p: 2299, ram: 24, disco: 1000, portatil: true, unificada: true },
+  { n: "Portátil de creación 16\"", d: "32 GB · 1 TB · gráfica dedicada con 8 GB de VRAM", p: 1499, ram: 32, disco: 1000, portatil: true, vram: 8 },
+  { n: "Sobremesa con gráfica potente", d: "32 GB · 2 TB · gráfica dedicada con 16 GB de VRAM · sin monitor", p: 2299, ram: 32, disco: 2000, vram: 16 },
+  { n: "Sobremesa de oficina", d: "16 GB (ampliable) · 512 GB · gráfica integrada · sin monitor", p: 549, ram: 16, disco: 512, ampliable: true },
+];
+const EXTRAS = [
+  { n: "Monitor de 27\"", d: "Buena fidelidad de color", p: 329, k: "monitor" },
+  { n: "Disco externo SSD de 2 TB", d: "Para guardar proyectos y copias", p: 189, k: "disco" },
+  { n: "Micrófono USB de estudio", d: "Para voz y pódcast", p: 99, k: "micro" },
+  { n: "Auriculares de monitorización", d: "Cerrados, para editar audio", p: 79, k: "auriculares" },
+  { n: "Ampliar la memoria a 32 GB", d: "Solo sirve en equipos con memoria ampliable", p: 210, k: "ampliar" },
+];
+const SUBS = [
+  { n: "Planes gratuitos", d: "Chat e imagen con límites diarios", p: 0, k: "gratis" },
+  { n: "Chat de IA, plan personal", d: "Sin límites prácticos de uso", p: 22, k: "chat" },
+  { n: "Chat de IA, plan de empresa", d: "Dos puestos · no se entrena con vuestros datos", p: 55, k: "empresa" },
+  { n: "Imagen con IA", d: "Generación de imágenes", p: 12, k: "imagen" },
+  { n: "Vídeo con IA, plan básico", d: "Unos pocos clips al mes", p: 15, k: "video" },
+  { n: "Vídeo con IA, plan profesional", d: "Muchos clips y más duración", p: 80, k: "videopro" },
+  { n: "Voz con IA", d: "Locuciones y clonación de voz", p: 22, k: "voz" },
+  { n: "Música con IA", d: "Sintonías y fondos", p: 10, k: "musica" },
+  { n: "Suite de edición y diseño", d: "Vídeo, foto y maquetación", p: 70, k: "suite" },
+  { n: "Editor de vídeo gratuito", d: "Profesional, sin coste", p: 0, k: "editor" },
+  { n: "Transcripción en la nube", d: "Audio a texto", p: 17, k: "transcripcion" },
+  { n: "Almacenamiento en la nube, 2 TB", d: "Copias y compartir con clientes", p: 10, k: "nube" },
+];
+const ITEMS = [].concat(
+  EQUIPOS.map((x) => Object.assign({ t: "E" }, x)),
+  EXTRAS.map((x) => Object.assign({ t: "X" }, x)),
+  SUBS.map((x) => Object.assign({ t: "S" }, x))
+);
+
+const PERFILES = [
+  { n: "Creadora de contenido para redes", b: 1200,
+    quien: "Lleva las redes de tres marcas pequeñas.",
+    hace: ["Unos diez vídeos cortos al mes, generados en la nube.", "Imágenes para publicaciones.", "Monta y recorta los vídeos en su portátil."],
+    importa: "Publicar a tiempo y no gastar en lo que no usa." },
+  { n: "Podcaster y locutor", b: 900,
+    quien: "Graba un pódcast semanal y hace locuciones por encargo.",
+    hace: ["Graba y edita audio.", "Transcribe los episodios.", "A veces genera voces o sintonías."],
+    importa: "Que suene bien. El vídeo no le interesa." },
+  { n: "Editor de vídeo freelance", b: 2500,
+    quien: "Edita vídeo corporativo y de eventos para varios clientes.",
+    hace: ["Edición de vídeo en 4K, a diario.", "Quiere probar a generar imagen en su propio equipo.", "Guarda proyectos muy pesados."],
+    importa: "Que el equipo no le frene y no perder material." },
+  { n: "Agencia pequeña con datos de clientes", b: 4000,
+    quien: "Dos personas que hacen comunicación para empresas. Son dos puestos de trabajo.",
+    hace: ["Textos, imágenes y presentaciones.", "Manejan entrevistas y documentos confidenciales de sus clientes.", "Uno de los dos edita algo de vídeo."],
+    importa: "Que los datos de los clientes no acaben donde no deben." },
+  { n: "Redactora y correctora que viaja mucho", b: 700,
+    quien: "Escribe y corrige textos; trabaja en trenes, cafeterías y bibliotecas.",
+    hace: ["Redacta y corrige con ayuda de un chat de IA.", "Muchas pestañas y documentos abiertos.", "Nada de imagen ni de vídeo."],
+    importa: "Que pese poco, que aguante y no pagar de más." },
+];
+
+/* ============================ REGLAS ============================ */
+const eur = (v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+
+function totals(sel) {
+  let once = 0, month = 0;
+  sel.forEach((i) => { const it = ITEMS[i]; if (it.t === "S") month += it.p; else once += it.p; });
+  return { once, year: month * 12, total: once + month * 12 };
+}
+
+function evaluate(pi, sel) {
+  const P = PERFILES[pi], out = [];
+  const add = (nivel, texto) => out.push({ nivel, texto });
+  const eq = sel.filter((i) => ITEMS[i].t === "E").map((i) => ITEMS[i]);
+  const has = (k) => sel.some((i) => ITEMS[i].k === k);
+  const T = totals(sel);
+
+  if (T.total > P.b) add("rojo", "Se pasa del presupuesto en " + eur(T.total - P.b) + ".");
+  else add("ok", "Dentro del presupuesto: sobran " + eur(P.b - T.total) + ".");
+
+  if (!eq.length) { add("rojo", "No hay ningún equipo en la cesta."); return out; }
+  const need = pi === 3 ? 2 : 1;
+  if (eq.length < need) add("rojo", "Son dos puestos de trabajo y solo hay un equipo.");
+  else if (eq.length > need) add("ambar", "Hay más equipos de los que hacen falta.");
+  else if (pi === 3) add("ok", "Dos equipos para dos puestos.");
+
+  const ampliado = has("ampliar");
+  if (ampliado && !eq.some((e) => e.ampliable)) add("rojo", "La ampliación de memoria no sirve: ningún equipo elegido es ampliable.");
+  const ram = (e) => (ampliado && e.ampliable ? 32 : e.ram);
+  const minRam = Math.min.apply(null, eq.map(ram)), maxRam = Math.max.apply(null, eq.map(ram));
+  const dedicada = eq.some((e) => e.vram);
+  const local = eq.some((e) => e.vram >= 8 || (e.unificada && e.ram >= 24));
+  if (eq.some((e) => !e.portatil) && !has("monitor")) add("rojo", "El sobremesa se vende sin monitor y no habéis comprado uno.");
+  if (eq.some((e) => e.etiquetaIA)) add("ambar", "El «PC con IA» cuesta 200 € más que el mismo portátil sin la etiqueta: lleva NPU, pero no genera vídeo.");
+
+  if (pi === 0) { // Creadora de redes
+    if (maxRam < 16) add("rojo", "Con 8 GB se queda corta para montar vídeo, aunque sea corto.");
+    else add("ok", "Memoria suficiente para montar vídeo corto.");
+    if (has("video") || has("videopro") || has("imagen")) add("ok", "Tiene con qué generar en la nube.");
+    else if (has("gratis")) add("ambar", "Con los planes gratuitos puede generar, pero con límites diarios y sin margen: para una profesional, una suscripción de imagen o de vídeo es más segura.");
+    else add("rojo", "No hay ninguna suscripción de imagen o de vídeo, ni siquiera los planes gratuitos: ¿con qué genera?");
+    if (has("videopro")) add("ambar", "Para diez vídeos cortos al mes, el plan profesional de vídeo es mucho plan.");
+    if (dedicada || eq.some((e) => e.ram >= 24 && e.unificada)) add("ambar", "Paga una potencia que no usará: genera en la nube.");
+  }
+  if (pi === 1) { // Podcaster
+    if (has("micro")) add("ok", "Tiene micrófono."); else add("rojo", "Sin micrófono no hay pódcast.");
+    if (maxRam < 16) add("ambar", "Para audio vale, pero con 8 GB irá justo.");
+    else add("ok", "El audio es lo más ligero: 16 GB bastan, y puede transcribir en su equipo.");
+    if (!has("voz") && !has("transcripcion") && maxRam < 16) add("ambar", "Ni suscripción de voz o transcripción ni memoria para hacerlo en local.");
+    if (dedicada) add("ambar", "Una gráfica dedicada no aporta nada al audio.");
+    if (has("video") || has("videopro")) add("ambar", "Paga una suscripción de vídeo que no le interesa.");
+  }
+  if (pi === 2) { // Editor de video
+    if (local) add("ok", "Gráfica dedicada, o mucha memoria unificada: puede editar y generar imagen en local.");
+    else add("rojo", "Para editar en 4K y generar en local necesita gráfica dedicada o mucha memoria unificada.");
+    if (maxRam >= 24) add("ok", "Memoria suficiente para editar en 4K.");
+    else if (maxRam >= 16) add("ambar", "Con 16 GB irá justo editando en 4K.");
+    else add("rojo", "8 GB no dan para editar vídeo en 4K.");
+    if (has("suite") || has("editor")) add("ok", "Tiene programa de edición."); else add("rojo", "No hay ningún programa de edición.");
+    if (Math.max.apply(null, eq.map((e) => e.disco)) < 1000 && !has("disco")) add("ambar", "Poco disco para proyectos de vídeo, y sin disco externo.");
+    else if (!has("disco") && !has("nube")) add("ambar", "No tiene dónde hacer copia de sus proyectos.");
+  }
+  if (pi === 3) { // Agencia
+    if (has("empresa") && local) add("ok", "Plan de empresa y, además, un equipo capaz de trabajar lo confidencial en local.");
+    else if (has("empresa")) add("ok", "Plan de empresa: los datos de los clientes no se usan para entrenar.");
+    else if (local) add("ok", "Un equipo capaz de trabajar lo confidencial en local.");
+    else add("rojo", "Datos de clientes sin plan de empresa ni un equipo que pueda trabajar en local.");
+    if (has("chat") && !has("empresa")) add(local ? "ambar" : "rojo", "El plan personal de chat no es sitio para documentos de clientes.");
+    if (has("gratis") && !has("empresa") && !has("chat")) add("ambar", "Con planes gratuitos, los documentos de clientes tampoco deberían salir del equipo.");
+    if (minRam < 16) add("ambar", "Uno de los puestos se queda con 8 GB.");
+  }
+  if (pi === 4) { // Redactora
+    if (eq.some((e) => !e.portatil)) add("rojo", "Viaja mucho: un sobremesa no le sirve.");
+    else if (eq.some((e) => e.ligero)) add("ok", "Portátil ligero.");
+    else add("ambar", "Para viajar a diario, pesa más de la cuenta.");
+    if (maxRam < 16) add("ambar", "Con 8 GB y muchas pestañas abiertas irá justa, y esa memoria no se amplía.");
+    else add("ok", "16 GB: suficiente y con margen.");
+    if (dedicada || eq.some((e) => e.ram >= 24)) add("ambar", "Paga una potencia que no usará: solo escribe.");
+    if (!has("gratis") && !has("chat") && !has("empresa")) add("ambar", "No ha elegido ningún chat de IA, ni siquiera el gratuito.");
+  }
+  return out;
+}
+const verdict = (checks) => (checks.some((c) => c.nivel === "rojo") ? "rojo" : checks.some((c) => c.nivel === "ambar") ? "ambar" : "ok");
+const VTXT = { ok: "Buena: cumple todo", ambar: "Aceptable: cumple, pero con peros", rojo: "No cumple algún requisito" };
+const TAG = { ok: "✔ Bien", ambar: "! Ojo", rojo: "✘ Falla" };
+
+/* ============================ CODIGOS ============================
+   perfil (1-5) + los articulos elegidos como bits en base 32 + una letra de control. */
+const A32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+function encode(pi, sel) {
+  let lo = 0, hi = 0; // 15 bits + 15 bits (27 articulos)
+  sel.forEach((i) => { if (i < 15) lo |= 1 << i; else hi |= 1 << (i - 15); });
+  const digits = [lo & 31, (lo >> 5) & 31, (lo >> 10) & 31, hi & 31, (hi >> 5) & 31, (hi >> 10) & 31];
+  const chk = (digits.reduce((a, d, k) => a + d * (2 * k + 3), 0) + (pi + 1) * 7) % 32;
+  return (pi + 1) + "-" + digits.map((d) => A32[d]).join("") + "-" + A32[chk];
+}
+function decode(code) {
+  const c = code.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1").replace(/[^0-9A-Z]/g, "");
+  if (c.length !== 8) return null;
+  const pi = parseInt(c[0], 10) - 1;
+  if (!(pi >= 0 && pi < PERFILES.length)) return null;
+  const digits = c.slice(1, 7).split("").map((ch) => A32.indexOf(ch));
+  const chk = A32.indexOf(c[7]);
+  if (digits.some((d) => d < 0) || chk < 0) return null;
+  if ((digits.reduce((a, d, k) => a + d * (2 * k + 3), 0) + (pi + 1) * 7) % 32 !== chk) return null;
+  const lo = digits[0] | (digits[1] << 5) | (digits[2] << 10), hi = digits[3] | (digits[4] << 5) | (digits[5] << 10);
+  const sel = [];
+  for (let i = 0; i < ITEMS.length; i++) if (i < 15 ? lo & (1 << i) : hi & (1 << (i - 15))) sel.push(i);
+  return { pi, sel, code: encode(pi, sel) };
+}
+
+/* ============================ INTERFAZ ============================ */
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+let perfil = null;
+const cesta = new Set();
+
+PERFILES.forEach((P, i) => {
+  const b = el("button", "profile");
+  b.append(el("b", null, P.n), document.createTextNode(P.quien), el("span", null, eur(P.b)));
+  b.addEventListener("click", () => choose(i));
+  $("profiles").append(b);
+});
+
+function choose(i) {
+  perfil = i; cesta.clear();
+  const P = PERFILES[i], br = $("brief");
+  br.textContent = "";
+  br.append(el("h2", null, P.n + " · " + eur(P.b)), el("div", null, P.quien));
+  const ul = el("ul"); P.hace.forEach((h) => ul.append(el("li", null, h))); br.append(ul);
+  br.append(el("div", null, "Le importa: " + P.importa));
+  const back = el("button", "linkbtn", "Cambiar de perfil");
+  back.addEventListener("click", () => { $("stepShop").classList.add("hidden"); $("stepProfile").classList.remove("hidden"); });
+  br.append(back);
+  $("stepProfile").classList.add("hidden"); $("stepShop").classList.remove("hidden");
+  renderCatalog(); renderBasket();
+  window.scrollTo(0, 0);
+}
+
+function renderCatalog() {
+  ["E", "X", "S"].forEach((t) => { $("cat-" + t).textContent = ""; });
+  ITEMS.forEach((it, i) => {
+    const b = el("button", "item");
+    b.draggable = true; b.dataset.i = i;
+    b.setAttribute("aria-pressed", cesta.has(i) ? "true" : "false");
+    const price = el("div", "price");
+    price.append(el("span", null, it.t === "S" ? (it.p ? eur(it.p) + " al mes" : "Gratis") : eur(it.p)), el("span", "mark", cesta.has(i) ? "✔ En la cesta" : ""));
+    b.append(el("div", "name", it.n), el("div", "spec", it.d), price);
+    b.addEventListener("click", () => toggle(i));
+    b.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", String(i)));
+    $("cat-" + it.t).append(b);
+  });
+}
+function toggle(i) { if (cesta.has(i)) cesta.delete(i); else cesta.add(i); renderCatalog(); renderBasket(); }
+
+const basket = $("basket");
+basket.addEventListener("dragover", (e) => e.preventDefault());
+basket.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const i = parseInt(e.dataTransfer.getData("text/plain"), 10);
+  if (i >= 0 && !cesta.has(i)) toggle(i);
+});
+
+function renderBasket() {
+  const P = PERFILES[perfil], sel = Array.from(cesta).sort((a, b) => a - b), T = totals(sel);
+  const ul = $("basketList"); ul.textContent = "";
+  if (!sel.length) ul.append(el("li", "empty", "Vacía. Pulsad o arrastrad lo que queráis comprar."));
+  sel.forEach((i) => {
+    const it = ITEMS[i], li = el("li");
+    const rm = el("button", null, "×"); rm.setAttribute("aria-label", "Quitar " + it.n); rm.addEventListener("click", () => toggle(i));
+    const right = el("span"); right.append(document.createTextNode(it.t === "S" ? eur(it.p * 12) + " " : eur(it.p) + " "), rm);
+    li.append(el("span", null, it.n), right); ul.append(li);
+  });
+  $("sumOnce").textContent = eur(T.once); $("sumYear").textContent = eur(T.year); $("sumTotal").textContent = eur(T.total);
+  $("budget").textContent = eur(P.b);
+  const over = T.total > P.b;
+  $("barFill").style.width = Math.min(100, (T.total / P.b) * 100) + "%";
+  $("bar").classList.toggle("overbar", over); basket.classList.toggle("over", over);
+  $("leftLabel").textContent = over ? "Os pasáis en" : "Os quedan";
+  $("left").textContent = eur(Math.abs(P.b - T.total)); $("leftRow").classList.toggle("neg", over);
+  $("deliver").disabled = !sel.length;
+}
+
+function summary(pi, sel, withChecks) {
+  const box = el("div"), ul = el("ul");
+  sel.forEach((i) => { const it = ITEMS[i]; ul.append(el("li", null, it.n + " · " + (it.t === "S" ? (it.p ? eur(it.p) + " al mes" : "gratis") : eur(it.p)))); });
+  const T = totals(sel);
+  box.append(ul, el("div", "money", "Total: " + eur(T.total) + " de " + eur(PERFILES[pi].b)));
+  if (withChecks) {
+    const checks = evaluate(pi, sel), cl = el("ul", "checks");
+    checks.forEach((c) => { const li = el("li"); li.append(el("span", "tag " + c.nivel, TAG[c.nivel]), el("span", null, c.texto)); cl.append(li); });
+    box.append(cl, el("div", "verdict", VTXT[verdict(checks)]));
+  }
+  return box;
+}
+
+$("deliver").addEventListener("click", () => {
+  if (!window.confirm("¿Entregamos? Ya no se podrá cambiar.")) return;
+  const sel = Array.from(cesta).sort((a, b) => a - b);
+  $("code").textContent = encode(perfil, sel);
+  const s = $("doneSummary"); s.textContent = "";
+  s.append(el("h2", null, PERFILES[perfil].n), summary(perfil, sel, true));
+  $("stepShop").classList.add("hidden"); $("stepDone").classList.remove("hidden");
+  $("sub").textContent = "Entregado.";
+  window.scrollTo(0, 0);
+});
+
+/* ---------- Vista del profesor ---------- */
+const KEY = "monta-tu-equipo-profe";
+let grupos = [];
+try { grupos = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { grupos = []; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(grupos)); } catch (e) { /* sin almacenamiento: sigue funcionando */ } };
+
+function renderTeacher() {
+  const cols = $("cols"); cols.textContent = "";
+  const maxV = Math.max.apply(null, [0].concat(grupos.map((g) => g.v)));
+  grupos.forEach((g, k) => {
+    const d = decode(g.c); if (!d) return;
+    const checks = evaluate(d.pi, d.sel), col = el("div", "col v-" + verdict(checks) + (g.v && g.v === maxV ? " win" : ""));
+    col.append(el("div", "who", (g.m ? g.m : "Grupo " + (k + 1)) + " · " + d.code), el("h3", null, PERFILES[d.pi].n), summary(d.pi, d.sel, true));
+    const votes = el("div", "votes"), minus = el("button", "small ghost", "−"), plus = el("button", "small", "+"), rm = el("button", "small ghost", "Quitar");
+    minus.setAttribute("aria-label", "Quitar un voto"); plus.setAttribute("aria-label", "Sumar un voto");
+    minus.addEventListener("click", () => { g.v = Math.max(0, g.v - 1); save(); renderTeacher(); });
+    plus.addEventListener("click", () => { g.v += 1; save(); renderTeacher(); });
+    rm.addEventListener("click", () => { grupos.splice(k, 1); save(); renderTeacher(); });
+    votes.append(document.createTextNode("Votos"), minus, el("b", null, String(g.v)), plus, rm);
+    col.append(votes); cols.append(col);
+  });
+}
+function addCode() {
+  const d = decode($("codeIn").value);
+  if (!d) { $("codeErr").textContent = "Código no válido: repasadlo letra a letra."; return; }
+  const m = $("mesaIn").value.trim().slice(0, 30);
+  $("codeErr").textContent = ""; $("codeIn").value = ""; $("mesaIn").value = "";
+  grupos.push({ c: d.code, v: 0, m }); save(); renderTeacher(); $("codeIn").focus();
+}
+$("codeAdd").addEventListener("click", addCode);
+$("codeIn").addEventListener("keydown", (e) => { if (e.key === "Enter") addCode(); });
+$("mesaIn").addEventListener("keydown", (e) => { if (e.key === "Enter") addCode(); });
+
+/* ---------- Reloj del juego (lo pone el profesor; se ve en la pantalla proyectada) ---------- */
+const TKEY = "monta-tu-equipo-reloj";
+let reloj = null, tick = null;
+try { reloj = JSON.parse(localStorage.getItem(TKEY) || "null"); } catch (e) { reloj = null; }
+function drawTimer() {
+  const box = $("timer");
+  if (!reloj) { box.classList.add("hidden"); if (tick) { clearInterval(tick); tick = null; } return; }
+  const left = Math.max(0, Math.round((reloj.end - Date.now()) / 1000));
+  const mm = Math.floor(left / 60), ss = left % 60;
+  box.classList.remove("hidden");
+  $("clock").textContent = mm + ":" + String(ss).padStart(2, "0");
+  $("timerTxt").textContent = left ? "Para entregar" : "¡Tiempo! Entregad lo que tengáis";
+  $("tbarFill").style.width = (left / reloj.total) * 100 + "%";
+  box.classList.toggle("hurry", left > 0 && left <= 120);
+  box.classList.toggle("done", left === 0);
+  if (!left && tick) { clearInterval(tick); tick = null; }
+}
+function startTimer(min) {
+  reloj = { end: Date.now() + min * 60000, total: min * 60 };
+  try { localStorage.setItem(TKEY, JSON.stringify(reloj)); } catch (e) { /* sin almacenamiento */ }
+  if (tick) clearInterval(tick);
+  tick = setInterval(drawTimer, 1000); drawTimer();
+}
+document.querySelectorAll(".timerbtns [data-min]").forEach((b) => b.addEventListener("click", () => startTimer(Number(b.dataset.min))));
+$("timerStop").addEventListener("click", () => { reloj = null; try { localStorage.removeItem(TKEY); } catch (e) { /* nada */ } drawTimer(); });
+if (reloj) { if (reloj.end > Date.now()) tick = setInterval(drawTimer, 1000); drawTimer(); }
+$("clearAll").addEventListener("click", () => { if (window.confirm("¿Borrar todos los grupos?")) { grupos = []; save(); renderTeacher(); } });
+
+function showTeacher(on) {
+  ["stepProfile", "stepShop", "stepDone"].forEach((id) => $(id).classList.add("hidden"));
+  $("stepTeacher").classList.toggle("hidden", !on);
+  document.body.classList.toggle("profe", on);
+  if (on) { $("sub").textContent = "Vista del profesor."; $("toggleTeacher").textContent = "Volver a la vista de grupo"; renderTeacher(); }
+  else { $("sub").textContent = "Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad."; $("toggleTeacher").textContent = "Vista del profesor"; $("stepProfile").classList.remove("hidden"); }
+}
+$("toggleTeacher").addEventListener("click", () => { location.hash = location.hash === "#profe" ? "" : "#profe"; });
+window.addEventListener("hashchange", () => showTeacher(location.hash === "#profe"));
+if (location.hash === "#profe") showTeacher(true);
+</script>
+</body>
+</html>
