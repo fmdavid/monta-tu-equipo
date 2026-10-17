@@ -12,7 +12,7 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: Calibri, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.4; }
-  header { background: var(--dark); color: #fff; padding: 18px 20px; }
+  header { background: var(--dark); color: #fff; padding: 16px 20px; border-bottom: 4px solid var(--copper); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   header h1 { margin: 0; font-size: 1.5rem; }
   header p { margin: 4px 0 0; color: #c7cdd6; }
   main { max-width: 1180px; margin: 0 auto; padding: 16px; }
@@ -22,12 +22,24 @@
   .hidden { display: none !important; }
 
   /* Perfiles */
-  .profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
-  .profile { text-align: left; background: var(--teal-soft); border: 2px solid transparent; border-radius: 10px; padding: 12px; color: var(--ink); }
-  .profile:hover, .profile:focus-visible { border-color: var(--teal); outline: none; }
-  .profile b { display: block; }
-  .profile span { display: block; font-size: 1.3rem; font-weight: 700; color: var(--teal); margin-top: 6px; }
-  .brief { background: var(--teal-soft); border-radius: 10px; padding: 14px 16px; }
+  .profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .profile { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 0; overflow: hidden; color: var(--ink); display: flex; flex-direction: column; transition: transform .12s, box-shadow .12s, border-color .12s; }
+  .profile:hover, .profile:focus-visible { border-color: var(--teal); outline: none; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(18,21,27,.12); }
+  .profile img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--card); }
+  .profile .ptxt { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .profile b { display: block; font-size: 1.02rem; }
+  .profile .pq { color: var(--slate); font-size: .9rem; flex: 1; }
+  .profile .pb { align-self: flex-start; font-size: 1.15rem; font-weight: 700; color: #fff; background: var(--teal); border-radius: 999px; padding: 2px 12px; margin-top: 6px; }
+  .pasos { list-style: none; display: flex; gap: 6px; margin: 0; padding: 0; counter-reset: paso; }
+  .pasos li { counter-increment: paso; display: flex; align-items: center; gap: 6px; color: #8a94a3; font-size: .9rem; font-weight: 700; }
+  .pasos li::before { content: counter(paso); width: 24px; height: 24px; border-radius: 50%; border: 2px solid #5b6b7a; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; }
+  .pasos li:not(:last-child) { padding-right: 10px; border-right: 1px solid #333b47; margin-right: 4px; }
+  .pasos li.on { color: #fff; } .pasos li.on::before { background: var(--copper); border-color: var(--copper); color: #fff; }
+  .pasos li.hecho { color: #c7cdd6; } .pasos li.hecho::before { content: "\2713"; border-color: var(--teal); background: var(--teal); color: #fff; }
+  body.profe .pasos { display: none; }
+  .brief { background: var(--teal-soft); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; }
+  .brief img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
+  @media (max-width: 600px) { .brief { grid-template-columns: 1fr; } .brief img { max-height: 180px; } }
   .brief h2 { margin: 0 0 6px; }
   .brief ul { margin: 6px 0 0; padding-left: 20px; }
   .linkbtn { background: none; border: none; color: var(--teal); text-decoration: underline; padding: 0; }
@@ -39,7 +51,17 @@
   .item { text-align: left; background: var(--card); border: 2px solid transparent; border-radius: 10px; padding: 10px 12px; color: var(--ink); display: flex; flex-direction: column; gap: 4px; min-height: 108px; }
   .item:hover, .item:focus-visible { border-color: var(--copper); outline: none; }
   .item[aria-pressed="true"] { background: var(--copper-soft); border-color: var(--copper); }
-  .item .name { font-weight: 700; }
+  .item .name { font-weight: 700; display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+  .item .ico { flex: none; width: 22px; height: 22px; color: var(--slate); }
+  .item[aria-pressed="true"] .ico { color: var(--copper); }
+  h2 .hico { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; color: var(--copper); }
+  .donecard { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; background: var(--teal-soft); border-radius: 12px; padding: 14px; margin: 8px 0 12px; }
+  .donecard img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
+  .donecard h2 { margin: 0 0 4px; }
+  @media (max-width: 600px) { .donecard { grid-template-columns: 1fr; } .donecard img { max-height: 160px; } }
+  .col .checks li.okline { color: var(--slate); }
+  .col .colfoto { display: block; width: calc(100% + 24px); max-width: none; margin: -12px -12px 10px; height: 120px; object-fit: cover; }
+  .winner .trofeo { width: 30px; height: 30px; color: var(--copper); vertical-align: -6px; margin-right: 6px; }
   .item .spec { font-size: .88rem; color: var(--slate); flex: 1; }
   .item .price { font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
   .item .mark { font-size: .82rem; font-weight: 700; color: var(--copper); }
@@ -126,8 +148,11 @@
 </head>
 <body>
 <header>
-  <h1>Monta tu equipo</h1>
-  <p id="sub">Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad.</p>
+  <div>
+    <h1>Monta tu equipo</h1>
+    <p id="sub">Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad.</p>
+  </div>
+  <ol class="pasos" id="pasos" aria-label="Pasos"><li class="on">Perfil</li><li>Cesta</li><li>Entrega</li></ol>
 </header>
 <div class="timer hidden" id="timer" aria-live="polite"><span class="clock" id="clock">15:00</span><span id="timerTxt">Para entregar</span><span class="tbar"><i id="tbarFill"></i></span></div>
 
@@ -143,11 +168,11 @@
     <div class="brief" id="brief"></div>
     <div class="layout">
       <div>
-        <h2>Equipos <small>precio único</small></h2>
+        <h2><span data-ico="portatil"></span>Equipos <small>precio único</small></h2>
         <div class="grid" id="cat-E"></div>
-        <h2>Extras <small>precio único</small></h2>
+        <h2><span data-ico="extra"></span>Extras <small>precio único</small></h2>
         <div class="grid" id="cat-X"></div>
-        <h2>Suscripciones <small>precio al mes; en la cesta cuentan doce meses</small></h2>
+        <h2><span data-ico="nube"></span>Suscripciones <small>precio al mes; en la cesta cuentan doce meses</small></h2>
         <div class="grid" id="cat-S"></div>
       </div>
       <aside class="basket" id="basket" aria-live="polite">
@@ -171,6 +196,7 @@
   <section id="stepDone" class="hidden">
     <h2>Entregado. Vuestro código:</h2>
     <div class="code" id="code"></div>
+    <div class="donecard" id="donecard"></div>
     <p class="envio" id="envio"></p>
     <p>Si el profesor os lo pide, dictádselo tal cual. Después tendréis un minuto para defender vuestra elección.</p>
     <div id="doneSummary"></div>
@@ -265,24 +291,24 @@ const ITEMS = [].concat(
 );
 
 const PERFILES = [
-  { n: "Creadora de contenido para redes", b: 1200,
+  { n: "Creadora de contenido para redes", foto: "img/perfil_creadora.jpg", b: 1200,
     quien: "Lleva las redes de tres marcas pequeñas.",
     hace: ["Unos diez vídeos cortos al mes, generados en la nube.", "Imágenes para publicaciones.", "Monta y recorta los vídeos en su portátil."],
     importa: "Publicar a tiempo y no gastar en lo que no usa." },
-  { n: "Podcaster y locutor", b: 900,
+  { n: "Podcaster y locutor", foto: "img/perfil_podcaster.jpg", b: 900,
     quien: "Graba un pódcast semanal y hace locuciones por encargo.",
     hace: ["Graba y edita audio.", "Transcribe los episodios.", "A veces genera voces o sintonías."],
     importa: "Que suene bien. El vídeo no le interesa." },
-  { n: "Editor de vídeo freelance", b: 2500,
+  { n: "Editor de vídeo freelance", foto: "img/perfil_editor.jpg", b: 2500,
     quien: "Edita vídeo corporativo y de eventos para varios clientes.",
     hace: ["Edición de vídeo en 4K, a diario.", "Quiere probar a generar imagen en su propio equipo.", "Guarda proyectos muy pesados."],
     importa: "Que el equipo no le frene y no perder material." },
-  { n: "Agencia pequeña con datos de clientes", b: 4000,
+  { n: "Agencia pequeña con datos de clientes", foto: "img/perfil_agencia.jpg", b: 4000,
     quien: "Dos personas que hacen comunicación para empresas. Son dos puestos de trabajo.",
     hace: ["Textos, imágenes y presentaciones.", "Manejan entrevistas y documentos confidenciales de sus clientes.", "Uno de los dos edita algo de vídeo."],
     importa: "Que los datos de los clientes no acaben donde no deben.",
     nota: "Cada artículo se compra una vez: para los dos puestos, elegid dos equipos distintos." },
-  { n: "Redactora y correctora que viaja mucho", b: 700,
+  { n: "Redactora y correctora que viaja mucho", foto: "img/perfil_redactora.jpg", b: 700,
     quien: "Escribe y corrige textos; trabaja en trenes, cafeterías y bibliotecas.",
     hace: ["Redacta y corrige con ayuda de un chat de IA.", "Muchas pestañas y documentos abiertos.", "Nada de imagen ni de vídeo."],
     importa: "Que pese poco, que aguante y no pagar de más." },
@@ -399,6 +425,18 @@ function decode(code) {
 }
 
 /* ============================ INTERFAZ ============================ */
+// Iconos de linea (estilo Tabler), en el color del texto
+const ICO = {
+  portatil: '<path d="M3 19h18M5 16V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10z"/>',
+  sobremesa: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M7 20h10M9 16v4M15 16v4"/>',
+  extra: '<path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0zM12 16v5"/>',
+  nube: '<path d="M7 18a4.6 4.4 0 0 1 0-9 5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7z"/>',
+  trofeo: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM5 9a2 2 0 0 1 0-4h2M19 9a2 2 0 0 0 0-4h-2"/>',
+};
+const svg = (k, cls) => { const sp = document.createElement("span"); sp.innerHTML = '<svg class="' + cls + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[k] + "</svg>"; return sp.firstChild; };
+document.querySelectorAll("[data-ico]").forEach((x) => x.replaceWith(svg(x.dataset.ico, "hico")));
+function paso(n) { [...document.querySelectorAll("#pasos li")].forEach((li, k) => { li.className = k + 1 === n ? "on" : k + 1 < n ? "hecho" : ""; }); }
+const foto = (P, cls) => { const im = document.createElement("img"); if (cls) im.className = cls; im.src = P.foto; im.alt = ""; return im; };
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 let perfil = null;
@@ -406,7 +444,8 @@ const cesta = new Set();
 
 PERFILES.forEach((P, i) => {
   const b = el("button", "profile");
-  b.append(el("b", null, P.n), document.createTextNode(P.quien), el("span", null, eur(P.b)));
+  const t = el("div", "ptxt"); t.append(el("b", null, P.n), el("span", "pq", P.quien), el("span", "pb", eur(P.b)));
+  b.append(foto(P), t);
   b.addEventListener("click", () => choose(i));
   $("profiles").append(b);
 });
@@ -415,13 +454,16 @@ function choose(i) {
   perfil = i; cesta.clear();
   const P = PERFILES[i], br = $("brief");
   br.textContent = "";
-  br.append(el("h2", null, P.n + " · " + eur(P.b)), el("div", null, P.quien));
-  const ul = el("ul"); P.hace.forEach((h) => ul.append(el("li", null, h))); br.append(ul);
-  br.append(el("div", null, "Le importa: " + P.importa));
-  if (P.nota) br.append(el("div", "nota", P.nota));
+  const txt = el("div");
+  txt.append(el("h2", null, P.n + " · " + eur(P.b)), el("div", null, P.quien));
+  const ul = el("ul"); P.hace.forEach((h) => ul.append(el("li", null, h))); txt.append(ul);
+  txt.append(el("div", null, "Le importa: " + P.importa));
+  if (P.nota) txt.append(el("div", "nota", P.nota));
   const back = el("button", "linkbtn", "Cambiar de perfil");
-  back.addEventListener("click", () => { $("stepShop").classList.add("hidden"); $("stepProfile").classList.remove("hidden"); document.body.classList.remove("shopping"); });
-  br.append(back);
+  back.addEventListener("click", () => { $("stepShop").classList.add("hidden"); $("stepProfile").classList.remove("hidden"); document.body.classList.remove("shopping"); paso(1); });
+  txt.append(back);
+  br.append(foto(P), txt);
+  paso(2);
   $("stepProfile").classList.add("hidden"); $("stepShop").classList.remove("hidden");
   document.body.classList.add("shopping");
   renderCatalog(); renderBasket();
@@ -436,7 +478,8 @@ function renderCatalog() {
     b.setAttribute("aria-pressed", cesta.has(i) ? "true" : "false");
     const price = el("div", "price");
     price.append(el("span", null, it.t === "S" ? (it.p ? eur(it.p) + " al mes" : "Gratis") : eur(it.p)), el("span", "mark", cesta.has(i) ? "✔ En la cesta" : ""));
-    b.append(el("div", "name", it.n), el("div", "spec", it.d), price);
+    const nm = el("div", "name"); nm.append(el("span", null, it.n), svg(it.t === "E" ? (it.portatil ? "portatil" : "sobremesa") : it.t === "X" ? "extra" : "nube", "ico"));
+    b.append(nm, el("div", "spec", it.d), price);
     b.addEventListener("click", () => toggle(i));
     b.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", String(i)));
     $("cat-" + it.t).append(b);
@@ -484,7 +527,11 @@ function summary(pi, sel, withChecks, noVerdict) {
   box.append(ul, el("div", "money", "Total: " + eur(T.total) + " de " + eur(PERFILES[pi].b)));
   if (withChecks) {
     const checks = evaluate(pi, sel), cl = el("ul", "checks");
-    checks.forEach((c) => { const li = el("li"); li.append(el("span", "tag " + c.nivel, TAG[c.nivel]), el("span", null, c.texto)); cl.append(li); });
+    // En la vista del profesor (noVerdict) solo se proyecta lo que falla o tiene pero; lo que esta bien, contado
+    const ver = noVerdict ? checks.filter((c) => c.nivel !== "ok") : checks;
+    ver.forEach((c) => { const li = el("li"); li.append(el("span", "tag " + c.nivel, TAG[c.nivel]), el("span", null, c.texto)); cl.append(li); });
+    const bien = checks.length - ver.length;
+    if (noVerdict && bien) { const li = el("li", "okline"); li.append(el("span", "tag ok", TAG.ok), el("span", null, bien === 1 ? "1 requisito más, bien." : bien + " requisitos más, bien.")); cl.append(li); }
     box.append(cl);
     if (!noVerdict) box.append(el("div", "verdict", VTXT[verdict(checks)]));
   }
@@ -508,7 +555,11 @@ $("deliver").addEventListener("click", () => {
       .catch(() => { env.className = "envio mal"; env.textContent = "No se ha podido enviar: dictad el código al profesor."; });
   }
   const s = $("doneSummary"); s.textContent = "";
-  s.append(el("h2", null, PERFILES[perfil].n), summary(perfil, sel, true));
+  const dc = $("donecard"); dc.textContent = "";
+  const dt = el("div"); dt.append(el("h2", null, PERFILES[perfil].n + " · " + eur(PERFILES[perfil].b)), el("div", null, PERFILES[perfil].quien));
+  dc.append(foto(PERFILES[perfil]), dt);
+  s.append(summary(perfil, sel, true));
+  paso(3);
   $("stepShop").classList.add("hidden"); $("stepDone").classList.remove("hidden");
   document.body.classList.remove("shopping");
   $("sub").textContent = "Entregado.";
@@ -529,6 +580,7 @@ function renderTeacher() {
   const ganan = maxV ? grupos.map((g, k) => (g.v === maxV ? nombre(g, k) : null)).filter(Boolean) : [];
   const w = $("winner"); w.textContent = "";
   if (grupos.length) {
+    if (ganan.length) w.append(svg("trofeo", "trofeo"));
     w.append(el("b", null, ganan.length === 1 ? "Gana: " + ganan[0] + ", " + maxV + (maxV === 1 ? " voto" : " votos") : ganan.length > 1 ? "Empate a " + maxV + ": " + ganan.join(" y ") : "Aún sin votos"),
       el("span", null, "Votos contados: " + total));
   }
@@ -536,6 +588,7 @@ function renderTeacher() {
     const d = decode(g.c); if (!d) return;
     const checks = evaluate(d.pi, d.sel), v = verdict(checks), gana = g.v && g.v === maxV;
     const col = el("div", "col v-" + v + (gana ? " win" : ""));
+    col.append(foto(PERFILES[d.pi], "colfoto"));
     const titulo = el("div", "mesa", nombre(g, k)); if (gana) titulo.append(el("span", "wintag", "Gana"));
     col.append(titulo, (() => { const w = el("div", "who", PERFILES[d.pi].n + " · "); w.append(el("span", "nowrap", d.code)); return w; })(), el("div", "vband v-" + v, VTXT[v]), summary(d.pi, d.sel, true, true));
     const votes = el("div", "votes"), minus = el("button", "small ghost", "−"), plus = el("button", "small", "+"), rm = el("button", "small ghost", "Quitar");
@@ -618,7 +671,8 @@ function leerHoja() {
     });
     if (nuevas) { save(); renderTeacher(); }
     const t = $("autoTxt"); t.className = "autotxt";
-    t.textContent = "Recibiendo: " + (filasVistas - ignorarHasta) + " entregas · " + new Date().toLocaleTimeString("es-ES");
+    const n = filasVistas - ignorarHasta;
+    t.textContent = "Recibiendo: " + n + (n === 1 ? " entrega · " : " entregas · ") + new Date().toLocaleTimeString("es-ES");
   }).catch(() => { const t = $("autoTxt"); t.className = "autotxt mal"; t.textContent = "No llega la hoja: teclead los códigos."; });
 }
 $("autoBtn").addEventListener("click", () => {
@@ -637,7 +691,7 @@ function showTeacher(on) {
   // La vista del profesor no se enlaza desde la página: se entra con #profe al final de la dirección.
   $("toggleTeacher").classList.toggle("hidden", !on);
   if (on) { $("sub").textContent = "Vista del profesor."; renderTeacher(); }
-  else { $("sub").textContent = "Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad."; $("stepProfile").classList.remove("hidden"); }
+  else { $("sub").textContent = "Elegid un perfil, llenad la cesta sin pasaros del presupuesto y entregad."; $("stepProfile").classList.remove("hidden"); paso(1); }
 }
 $("toggleTeacher").addEventListener("click", () => { location.hash = ""; });
 window.addEventListener("hashchange", () => showTeacher(location.hash === "#profe"));
