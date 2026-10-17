@@ -59,6 +59,8 @@
   .donecard img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
   .donecard h2 { margin: 0 0 4px; }
   @media (max-width: 600px) { .donecard { grid-template-columns: 1fr; } .donecard img { max-height: 160px; } }
+  .votacion { background: var(--copper-soft); border-left: 4px solid var(--copper); padding: 10px 12px; border-radius: 6px; }
+  .ayudavoto { color: var(--slate); margin: 14px 0 0; font-size: .95rem; }
   .col .checks li.okline { color: var(--slate); }
   .col .colfoto { display: block; width: calc(100% + 24px); max-width: none; margin: -12px -12px 10px; height: 120px; object-fit: cover; }
   .winner .trofeo { width: 30px; height: 30px; color: var(--copper); vertical-align: -6px; margin-right: 6px; }
@@ -198,7 +200,8 @@
     <div class="code" id="code"></div>
     <div class="donecard" id="donecard"></div>
     <p class="envio" id="envio"></p>
-    <p>Si el profesor os lo pide, dictádselo tal cual. Después tendréis un minuto para defender vuestra elección.</p>
+    <p>Si el profesor os lo pide, dictádselo tal cual.</p>
+    <p class="votacion"><b>Y después:</b> cada grupo defiende su elección en un minuto. Luego votamos a mano alzada la mejor defensa: cada uno vota a un grupo que no sea el suyo. Gana la mejor defensa, no el equipo más caro.</p>
     <div id="doneSummary"></div>
   </section>
 
@@ -207,7 +210,7 @@
     <h2>Vista del profesor <small>teclead el código de cada grupo</small></h2>
     <div class="addcode">
       <input id="codeIn" aria-label="Código del grupo" placeholder="3-ABCDEF-G" autocomplete="off">
-      <input id="mesaIn" class="mesa" aria-label="Mesa o nombre del grupo (opcional)" placeholder="Mesa o nombre (opcional)" autocomplete="off">
+      <input id="mesaIn" class="mesa" aria-label="Nombre del grupo (opcional)" placeholder="Nombre del grupo (opcional)" autocomplete="off">
       <button id="codeAdd">Añadir</button>
       <button class="small ghost" id="clearAll">Vaciar todo</button>
       <button class="small" id="autoBtn">Recibir entregas</button>
@@ -221,6 +224,7 @@
       <button class="small" data-min="1">1 min</button>
       <button class="small ghost" id="timerStop">Parar</button>
     </div>
+    <p class="ayudavoto">Votación a mano alzada, grupo por grupo («¿quién vota a…?»): cada uno vota a un grupo que no sea el suyo. Cuenta las manos y pulsa <b>+</b> en esa columna una vez por voto. «Votos contados» debe coincidir con los alumnos presentes.</p>
     <div class="winner" id="winner"></div>
     <div class="cols" id="cols"></div>
   </section>
@@ -545,7 +549,7 @@ $("deliver").addEventListener("click", () => {
   $("code").textContent = codigo;
   const env = $("envio"); env.className = "envio"; env.textContent = "";
   if (envioActivo()) {
-    const mesa = (window.prompt("¿Cómo se llama vuestra mesa? Por ejemplo: Mesa de la ventana") || "").trim().slice(0, 30);
+    const mesa = (window.prompt("¿Cómo se llama vuestro grupo? Por ejemplo: Los del fondo") || "").trim().slice(0, 30);
     env.textContent = "Enviando al profesor…";
     const datos = new URLSearchParams();
     datos.append(ENVIO.campoMesa, mesa || "Sin nombre");
